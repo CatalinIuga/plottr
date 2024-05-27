@@ -1,26 +1,29 @@
 <script setup lang="ts">
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-vue-next";
+
 import { OrbitControls } from "@tresjs/cientos";
 import { TresCanvas } from "@tresjs/core";
 import { evaluate } from "mathjs";
 import {
-  AxesHelper,
   BasicShadowMap,
   BufferGeometry,
   Color,
-  GridHelper,
   Line,
   LineBasicMaterial,
-  Mesh,
-  MeshBasicMaterial,
   NoToneMapping,
+  Plane,
   SRGBColorSpace,
-  SphereGeometry,
   Vector3,
 } from "three";
-import { ref, watch } from "vue";
+import { ref, shallowRef, watch } from "vue";
+
+const open = ref(true);
+const functions = ref<Array<string>>([]);
+const func = ref<string>("");
 
 const gl = {
-  clearColor: "#f2f2f2",
   shadows: true,
   alpha: false,
   shadowMapType: BasicShadowMap,
@@ -28,98 +31,131 @@ const gl = {
   toneMapping: NoToneMapping,
 };
 
-const ecuations = ref<Array<string>>(["x^2"]);
-const ecuation = ref("");
+// plotting things
+interface GraphData {
+  points: Vector3[];
+  color: Color;
+}
 
-const addEcuation = () => {
-  ecuations.value.push(ecuation.value);
-  ecuation.value = "";
-};
+const graphData = ref<Array<GraphData>>([]);
 
-const graphData = ref<Array<{ points: Vector3[]; color: Color }>>([]);
-
-watch(
-  () => ecuations.value,
-  (newEcuations) => {
-    const newGraphData = newEcuations.map((eq, index) => {
-      const points: Vector3[] = [];
-      for (let x = -10; x <= 10; x += 0.1) {
-        try {
-          const y = evaluate(eq, { x });
-          points.push(new Vector3(x, y, 0));
-        } catch (error) {
-          console.error(`Invalid equation: ${eq}`, error);
-        }
-      }
-      return { points, color: new Color(`hsl(${index * 60}, 100%, 50%)`) }; // Different color for each equation
-    });
-    graphData.value = newGraphData;
-  },
-  {
-    deep: true,
-    immediate: true,
+const createGraphData = (fn: string) => {
+  const points: Array<Vector3> = [];
+  for (let x = -100; x < 100; x += 0.1) {
+    try {
+      const y = evaluate(fn, { x });
+      points.push(new Vector3(x, y, 0));
+    } catch (e) {
+      console.error(`Error in function ${fn}: ${e}`);
+    }
   }
-);
+  return { points, color: new Color(Math.random() * 0xffffff) };
+};
 
 const createLine = (points: Vector3[], color: Color) => {
   const geometry = new BufferGeometry().setFromPoints(points);
-  const material = new LineBasicMaterial({ color, linewidth: 2 });
+  const material = new LineBasicMaterial({
+    color,
+    linewidth: 10,
+    clippingPlanes: clipPlanes,
+    clipIntersection: false,
+  });
+  console.log(material);
+
   return new Line(geometry, material);
 };
 
-const axesHelper = new AxesHelper(10);
-const gidHelper = new GridHelper(20, 20);
+watch(
+  () => functions.value,
+  (newFunctions) => {
+    const newGraphData = newFunctions.map(createGraphData);
+    graphData.value = newGraphData;
+  },
+  { deep: true, immediate: true }
+);
 
-const createSphere = () => {
-  const geometry = new SphereGeometry(0.1, 32, 32);
-  const material = new MeshBasicMaterial({ color: new Color("red") });
-  // position the sphere at (0, 0, 0)
-  geometry.translate(1, 1, 0);
-  return new Mesh(geometry, material);
-};
+// will clip the graphs in a box 100x100x100
+const clipPlanes = [
+  new Plane(new Vector3(1, 0, 0), 50),
+  new Plane(new Vector3(-1, 0, 0), 50),
+  new Plane(new Vector3(0, 1, 0), 50),
+  new Plane(new Vector3(0, -1, 0), 50),
+  new Plane(new Vector3(0, 0, 1), 50),
+  new Plane(new Vector3(0, 0, -1), 50),
+];
 
-const coords = ref({ x: 0, y: 0, z: 0 });
+const ctxRef = shallowRef();
+
+watch(ctxRef, (ctx) => {
+  const { renderer } = ctx.context;
+  renderer.value.localClippingEnabled = true;
+});
 </script>
 
 <template>
-  <div class="min-h-screen w-screen flex">
-    <div class="w-60 p-4">
-      <input
-        v-model="ecuation"
-        @keyup.enter="addEcuation"
-        class="w-full p-2 mb-4 border border-gray-300"
-        placeholder="Add equation"
-      />
-      <ul class="px-2 list-disc space-y-2">
-        <li v-for="(e, index) in ecuations" :key="index">
-          {{ e }}
-          <button @click="ecuations.splice(index, 1)" class="ml-2 text-red-500">
-            ❌
-          </button>
-        </li>
-      </ul>
-      <div class="">
-        Coordinates:
-        <div class="text-pretty">
-          {{ JSON.stringify(coords, null, 4) }}
-        </div>
+  <div class="min-h-screen relative w-screen flex">
+    <div
+      :class="`absolute bg-background z-50 w-60 shadow-md transition-all duration-300 ease-in-out p-2 ${
+        open ? 'block' : 'hidden'
+      }`"
+    >
+      <div class="px-2 py-1 flex items-center justify-between">
+        <div class="text-fuchsia-500 font-extrabold text-2xl">Plottr</div>
+        <Button @click="() => (open = false)" variant="outline" :size="'icon'">
+          <ChevronLeftIcon />
+        </Button>
+      </div>
+      <div class="p-2 flex items-center gap-2">
+        <Input
+          v-model="func"
+          @keyup.enter="
+            () => {
+              functions.push(func);
+              func = '';
+            }
+          "
+          placeholder="Enter a function"
+        />
+      </div>
+      <div
+        v-for="(_, index) in functions"
+        :key="index"
+        class="flex items-center justify-between px-2 py-1"
+      >
+        <div>{{ functions[index] }}</div>
+        <Button
+          class="size-4 rounded-full text-red-500"
+          @click="() => functions.splice(index, 1)"
+          variant="outline"
+          :size="'icon'"
+        >
+          <XIcon />
+        </Button>
       </div>
     </div>
-    <div class="flex-1">
-      <TresCanvas class="h-full" v-bind="gl">
-        <TresPerspectiveCamera :position="new Vector3(5, 5, 5)" />
-        <OrbitControls />
-        <primitive
-          v-for="(graph, index) in graphData"
-          :key="index"
-          :object="createLine(graph.points, graph.color)"
-          @click="(intersection:any) => console.log(intersection.point)"
-          @pointer-move="(intersection:any) => (coords = intersection.point)"
-        />
-        <primitive :object="createSphere()" />
-        <primitive :object="axesHelper" />
-        <primitive :object="gidHelper" />
-      </TresCanvas>
+    <div
+      v-show="!open"
+      class="absolute transition-all duration-300 ease-in-out z-50 left-2 top-2 shadow-md"
+    >
+      <Button @click="() => (open = true)" variant="outline" :size="'icon'">
+        <ChevronRightIcon />
+      </Button>
     </div>
+    <TresCanvas ref="ctxRef" v-bind="gl" :clear-color="'#f2f2f2'" window-size>
+      <TresPerspectiveCamera :position="new Vector3(50, 50, 50)" />
+      <OrbitControls />
+      <primitive
+        v-for="(graph, index) in graphData"
+        :key="index"
+        :object="createLine(graph.points, graph.color)"
+      />
+      <!-- <TresPlaneHelper :args="[clipPlanes[0], 100, 0xff0000]" />
+      <TresPlaneHelper :args="[clipPlanes[1], 100, 0x00ff00]" />
+      <TresPlaneHelper :args="[clipPlanes[2], 100, 0x0000ff]" />
+      <TresPlaneHelper :args="[clipPlanes[3], 100, 0xff00ff]" />
+      <TresPlaneHelper :args="[clipPlanes[4], 100, 0xffff00]" />
+      <TresPlaneHelper :args="[clipPlanes[5], 100, 0x00ffff]" /> -->
+      <TresGridHelper :args="[100, 100]" />
+    </TresCanvas>
   </div>
 </template>

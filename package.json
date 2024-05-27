@@ -9,13 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-icons/vue": "^1.0.0",
     "@tresjs/cientos": "^3.9.0",
     "@tresjs/core": "^3.9.0",
+    "@vueuse/core": "^10.10.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.379.0",
     "mathjs": "^12.4.2",
+    "radix-vue": "^1.8.2",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss-animate": "^1.0.7",
     "three": "^0.164.1",
     "vue": "^3.4.21"
   },
   "devDependencies": {
+    "@types/node": "^20.12.12",
     "@types/three": "^0.164.1",
     "@vitejs/plugin-vue": "^5.0.4",
     "autoprefixer": "^10.4.19",
