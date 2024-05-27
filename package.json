@@ -1,0 +1,28 @@
+{
+  "name": "plottr",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tresjs/cientos": "^3.9.0",
+    "@tresjs/core": "^3.9.0",
+    "mathjs": "^12.4.2",
+    "three": "^0.164.1",
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@types/three": "^0.164.1",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vue-tsc": "^2.0.6"
+  }
+}
