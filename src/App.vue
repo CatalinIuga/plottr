@@ -4,20 +4,26 @@ import { Input } from "@/components/ui/input";
 import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-vue-next";
 
 import { OrbitControls } from "@tresjs/cientos";
-import { TresCanvas } from "@tresjs/core";
+import { TresCanvas, TresContext } from "@tresjs/core";
 import { evaluate } from "mathjs";
 import {
   BasicShadowMap,
-  BufferGeometry,
+  BoxGeometry,
   Color,
-  Line,
+  EdgesGeometry,
   LineBasicMaterial,
+  LineSegments,
   NoToneMapping,
   Plane,
   SRGBColorSpace,
   Vector3,
 } from "three";
-import { ref, shallowRef, watch } from "vue";
+
+import { ViewHelper } from "three/examples/jsm/helpers/ViewHelper.js";
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { ShallowRef, ref, shallowRef, watch } from "vue";
 
 const open = ref(true);
 const functions = ref<Array<string>>([]);
@@ -31,6 +37,27 @@ const gl = {
   toneMapping: NoToneMapping,
 };
 
+// will clip the graphs in a box 100x100x100
+const clipPlanes = [
+  new Plane(new Vector3(1, 0, 0), 5),
+  new Plane(new Vector3(-1, 0, 0), 5),
+  new Plane(new Vector3(0, 1, 0), 5),
+  new Plane(new Vector3(0, -1, 0), 5),
+  new Plane(new Vector3(0, 0, 1), 5),
+  new Plane(new Vector3(0, 0, -1), 5),
+];
+
+// Enable clipping
+const ctxRef: ShallowRef<{ context: TresContext } | undefined> = shallowRef();
+watch(ctxRef, (ctx) => {
+  if (!ctx) return;
+  const { renderer } = ctx.context;
+  renderer.value.localClippingEnabled = true;
+
+  // view helper
+  createViewHelper();
+});
+
 // plotting things
 interface GraphData {
   points: Vector3[];
@@ -41,7 +68,7 @@ const graphData = ref<Array<GraphData>>([]);
 
 const createGraphData = (fn: string) => {
   const points: Array<Vector3> = [];
-  for (let x = -100; x < 100; x += 0.1) {
+  for (let x = -10; x < 10; x += 0.1) {
     try {
       const y = evaluate(fn, { x });
       points.push(new Vector3(x, y, 0));
@@ -50,19 +77,6 @@ const createGraphData = (fn: string) => {
     }
   }
   return { points, color: new Color(Math.random() * 0xffffff) };
-};
-
-const createLine = (points: Vector3[], color: Color) => {
-  const geometry = new BufferGeometry().setFromPoints(points);
-  const material = new LineBasicMaterial({
-    color,
-    linewidth: 10,
-    clippingPlanes: clipPlanes,
-    clipIntersection: false,
-  });
-  console.log(material);
-
-  return new Line(geometry, material);
 };
 
 watch(
@@ -74,28 +88,43 @@ watch(
   { deep: true, immediate: true }
 );
 
-// will clip the graphs in a box 100x100x100
-const clipPlanes = [
-  new Plane(new Vector3(1, 0, 0), 50),
-  new Plane(new Vector3(-1, 0, 0), 50),
-  new Plane(new Vector3(0, 1, 0), 50),
-  new Plane(new Vector3(0, -1, 0), 50),
-  new Plane(new Vector3(0, 0, 1), 50),
-  new Plane(new Vector3(0, 0, -1), 50),
-];
+const createThickLine = (points: Vector3[], color: Color) => {
+  const geometry = new LineGeometry().setPositions(
+    points.map((point) => [point.x, point.y, point.z]).flat()
+  );
+  const material = new LineMaterial({
+    color,
+    linewidth: 0.005,
+    clippingPlanes: clipPlanes,
+    clipIntersection: false,
+  });
 
-const ctxRef = shallowRef();
+  return new Line2(geometry, material);
+};
 
-watch(ctxRef, (ctx) => {
-  const { renderer } = ctx.context;
-  renderer.value.localClippingEnabled = true;
-});
+const createBoundingBox = () => {
+  const geometry = new BoxGeometry(10, 10, 10);
+  const edgesGeometry = new EdgesGeometry(geometry);
+  const material = new LineBasicMaterial({ color: 0x808080 });
+  const edges = new LineSegments(edgesGeometry, material);
+  return edges;
+};
+
+const createViewHelper = () => {
+  if (!ctxRef.value) return;
+  const { camera, renderer } = ctxRef.value?.context;
+
+  if (!camera.value) return;
+  const vieHelper = new ViewHelper(camera.value, renderer.value.domElement);
+
+  // ctxRef.value.context.scene.value.add(vieHelper);
+};
 </script>
 
 <template>
   <div class="min-h-screen relative w-screen flex">
     <div
-      :class="`absolute bg-background z-50 w-60 shadow-md transition-all duration-300 ease-in-out p-2 ${
+      :class="`absolute top-2 left-2 rounded-md border bg-background z-50 w-60 shadow-md transition-transform duration-1000 ease-in-out p-2 ${
         open ? 'block' : 'hidden'
       }`"
     >
@@ -141,21 +170,17 @@ watch(ctxRef, (ctx) => {
         <ChevronRightIcon />
       </Button>
     </div>
-    <TresCanvas ref="ctxRef" v-bind="gl" :clear-color="'#f2f2f2'" window-size>
-      <TresPerspectiveCamera :position="new Vector3(50, 50, 50)" />
+    <TresCanvas ref="ctxRef" v-bind="gl" :clear-color="'#252525'" window-size>
+      <TresPerspectiveCamera :position="new Vector3(10, 8, 12)" />
       <OrbitControls />
       <primitive
         v-for="(graph, index) in graphData"
         :key="index"
-        :object="createLine(graph.points, graph.color)"
+        :object="createThickLine(graph.points, graph.color)"
       />
-      <!-- <TresPlaneHelper :args="[clipPlanes[0], 100, 0xff0000]" />
-      <TresPlaneHelper :args="[clipPlanes[1], 100, 0x00ff00]" />
-      <TresPlaneHelper :args="[clipPlanes[2], 100, 0x0000ff]" />
-      <TresPlaneHelper :args="[clipPlanes[3], 100, 0xff00ff]" />
-      <TresPlaneHelper :args="[clipPlanes[4], 100, 0xffff00]" />
-      <TresPlaneHelper :args="[clipPlanes[5], 100, 0x00ffff]" /> -->
-      <TresGridHelper :args="[100, 100]" />
+      <primitive :object="createBoundingBox()" />
+      <TresGridHelper :args="[10, 10, 0xf2f2f2f2]" />
+      <!-- <TresAxesHelper :args="[5]" /> -->
     </TresCanvas>
   </div>
 </template>
