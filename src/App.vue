@@ -19,7 +19,6 @@ import {
   Vector3,
 } from "three";
 
-import { ViewHelper } from "three/examples/jsm/helpers/ViewHelper.js";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
@@ -53,9 +52,6 @@ watch(ctxRef, (ctx) => {
   if (!ctx) return;
   const { renderer } = ctx.context;
   renderer.value.localClippingEnabled = true;
-
-  // view helper
-  createViewHelper();
 });
 
 // plotting things
@@ -109,34 +105,25 @@ const createBoundingBox = () => {
   const edges = new LineSegments(edgesGeometry, material);
   return edges;
 };
-
-const createViewHelper = () => {
-  if (!ctxRef.value) return;
-  const { camera, renderer } = ctxRef.value?.context;
-
-  if (!camera.value) return;
-  const vieHelper = new ViewHelper(camera.value, renderer.value.domElement);
-
-  // ctxRef.value.context.scene.value.add(vieHelper);
-};
 </script>
 
 <template>
-  <div class="min-h-screen relative w-screen flex">
+  <div class="dark min-h-screen relative w-screen flex">
     <div
       :class="`absolute top-2 left-2 rounded-md border bg-background z-50 w-60 shadow-md transition-transform duration-1000 ease-in-out p-2 ${
         open ? 'block' : 'hidden'
       }`"
     >
       <div class="px-2 py-1 flex items-center justify-between">
-        <div class="text-fuchsia-500 font-extrabold text-2xl">Plottr</div>
+        <div class="text-foreground font-extrabold text-2xl">Plottr</div>
         <Button @click="() => (open = false)" variant="outline" :size="'icon'">
-          <ChevronLeftIcon />
+          <ChevronLeftIcon class="text-foreground" />
         </Button>
       </div>
       <div class="p-2 flex items-center gap-2">
         <Input
           v-model="func"
+          class="text-foreground"
           @keyup.enter="
             () => {
               functions.push(func);
@@ -151,7 +138,12 @@ const createViewHelper = () => {
         :key="index"
         class="flex items-center justify-between px-2 py-1"
       >
-        <div>{{ functions[index] }}</div>
+        <div
+          class="text-foreground font-semibold text-sm truncate"
+          :title="functions[index]"
+        >
+          {{ functions[index] }}
+        </div>
         <Button
           class="size-4 rounded-full text-red-500"
           @click="() => functions.splice(index, 1)"
@@ -167,7 +159,7 @@ const createViewHelper = () => {
       class="absolute transition-all duration-300 ease-in-out z-50 left-2 top-2 shadow-md"
     >
       <Button @click="() => (open = true)" variant="outline" :size="'icon'">
-        <ChevronRightIcon />
+        <ChevronRightIcon class="text-foreground" />
       </Button>
     </div>
     <TresCanvas ref="ctxRef" v-bind="gl" :clear-color="'#252525'" window-size>
