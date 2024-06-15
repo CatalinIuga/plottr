@@ -126,6 +126,31 @@ const createBoundingBox = () => {
           class="text-foreground"
           @keyup.enter="
             () => {
+              const variables = ['x', 'y', 'z'];
+              const sides = func.split('=').map((side) => side.trim());
+              switch (sides.length) {
+                case 1: {
+                  const dependentVariables = variables.filter(
+                    (variable) => !func.includes(variable)
+                  );
+                  if (dependentVariables.length !== 1) return;
+                  func = dependentVariables.toString().concat(' = ', func);
+                  break;
+                }
+                case 2: {
+                  const leftSide = sides[0];
+                  const rightSide = sides[1];
+                  if (
+                    !variables.includes(leftSide) ||
+                    rightSide.includes(leftSide)
+                  ) {
+                    return;
+                  }
+                  break;
+                }
+                default:
+                  return;
+              }
               functions.push(func);
               func = '';
             }
