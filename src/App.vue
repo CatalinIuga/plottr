@@ -64,12 +64,37 @@ const graphData = ref<Array<GraphData>>([]);
 
 const createGraphData = (fn: string) => {
   const points: Array<Vector3> = [];
-  for (let x = -10; x < 10; x += 0.1) {
-    try {
-      const y = evaluate(fn, { x });
-      points.push(new Vector3(x, y, 0));
-    } catch (e) {
-      console.error(`Error in function ${fn}: ${e}`);
+  const sides = fn.split("=").map((side) => side.trim());
+  const dependentVariable = sides[0];
+  const equation = sides[1];
+  for (let u = -10; u < 10; u += 0.1) {
+    for (let v = -10; v < 10; v += 0.1) {
+      try {
+        let x, y, z;
+        switch (dependentVariable) {
+          case "x": {
+            y = u;
+            z = v;
+            x = evaluate(equation, { y, z });
+            break;
+          }
+          case "y": {
+            x = u;
+            z = v;
+            y = evaluate(equation, { x, z });
+            break;
+          }
+          case "z": {
+            x = u;
+            y = v;
+            z = evaluate(equation, { x, y });
+            break;
+          }
+        }
+        points.push(new Vector3(x, y, z));
+      } catch (e) {
+        console.error(`Error in function ${fn}: ${e}`);
+      }
     }
   }
   return { points, color: new Color(Math.random() * 0xffffff) };
