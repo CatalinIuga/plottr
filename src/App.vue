@@ -5,7 +5,6 @@ import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-vue-next";
 
 import { OrbitControls } from "@tresjs/cientos";
 import { TresCanvas, TresContext } from "@tresjs/core";
-import { evaluate } from "mathjs";
 import {
   BasicShadowMap,
   BoxGeometry,
@@ -23,6 +22,7 @@ import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { ShallowRef, ref, shallowRef, watch } from "vue";
+import { createGraphData, preprocessInput } from "./lib/utils";
 
 const open = ref(true);
 const functions = ref<Array<string>>([]);
@@ -61,44 +61,6 @@ interface GraphData {
 }
 
 const graphData = ref<Array<GraphData>>([]);
-
-const createGraphData = (fn: string) => {
-  const points: Array<Vector3> = [];
-  const sides = fn.split("=").map((side) => side.trim());
-  const dependentVariable = sides[0];
-  const equation = sides[1];
-  for (let u = -10; u < 10; u += 0.1) {
-    for (let v = -10; v < 10; v += 0.1) {
-      try {
-        let x, y, z;
-        switch (dependentVariable) {
-          case "x": {
-            y = u;
-            z = v;
-            x = evaluate(equation, { y, z });
-            break;
-          }
-          case "y": {
-            x = u;
-            z = v;
-            y = evaluate(equation, { x, z });
-            break;
-          }
-          case "z": {
-            x = u;
-            y = v;
-            z = evaluate(equation, { x, y });
-            break;
-          }
-        }
-        points.push(new Vector3(x, y, z));
-      } catch (e) {
-        console.error(`Error in function ${fn}: ${e}`);
-      }
-    }
-  }
-  return { points, color: new Color(Math.random() * 0xffffff) };
-};
 
 watch(
   () => functions.value,
@@ -151,33 +113,12 @@ const createBoundingBox = () => {
           class="text-foreground"
           @keyup.enter="
             () => {
-              const variables = ['x', 'y', 'z'];
-              const sides = func.split('=').map((side) => side.trim());
-              switch (sides.length) {
-                case 1: {
-                  const dependentVariables = variables.filter(
-                    (variable) => !func.includes(variable)
-                  );
-                  if (dependentVariables.length !== 1) return;
-                  func = dependentVariables.toString().concat(' = ', func);
-                  break;
-                }
-                case 2: {
-                  const leftSide = sides[0];
-                  const rightSide = sides[1];
-                  if (
-                    !variables.includes(leftSide) ||
-                    rightSide.includes(leftSide)
-                  ) {
-                    return;
-                  }
-                  break;
-                }
-                default:
-                  return;
+              try {
+                functions.push(preprocessInput(func));
+                func = '';
+              } catch (e) {
+                console.error('Invalid function: ', func);
               }
-              functions.push(func);
-              func = '';
             }
           "
           placeholder="Enter a function"
