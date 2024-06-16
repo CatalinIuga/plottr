@@ -23,9 +23,10 @@ import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { ShallowRef, ref, shallowRef, watch } from "vue";
 import { createGraphData, preprocessInput } from "./lib/utils";
+import { Equation } from "./types/equations";
 
 const open = ref(true);
-const functions = ref<Array<string>>([]);
+const functions = ref<Array<Equation>>([]);
 const func = ref<string>("");
 
 const gl = {
@@ -131,9 +132,9 @@ const createBoundingBox = () => {
       >
         <div
           class="text-foreground font-semibold text-sm truncate"
-          :title="functions[index]"
+          :title="functions[index].text"
         >
-          {{ functions[index] }}
+          {{ functions[index].text }}
         </div>
         <Button
           class="size-4 rounded-full text-red-500"

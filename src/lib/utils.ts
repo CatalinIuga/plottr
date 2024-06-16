@@ -1,3 +1,4 @@
+import { Equation, Variable } from "@/types/equations";
 import { type ClassValue, clsx } from "clsx";
 import { evaluate } from "mathjs";
 import { twMerge } from "tailwind-merge";
@@ -7,8 +8,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const preprocessInput = (func: string): string => {
-  const variables = ["x", "y", "z"];
+export const preprocessInput = (func: string): Equation => {
+  const variables = Object.values(Variable);
+  func = func.replace(/\s/g, " ").toLowerCase();
   const sides = func.split("=").map((side) => side.trim());
   switch (sides.length) {
     case 1: {
@@ -16,48 +18,54 @@ export const preprocessInput = (func: string): string => {
         (variable) => !func.includes(variable)
       );
       if (dependentVariables.length !== 1) throw new Error("Invalid function");
-      func = dependentVariables.toString().concat(" = ", func);
-      return func;
+      const dependentVariable = dependentVariables[0] as Variable;
+      return {
+        dependentVariable: dependentVariable,
+        function: func,
+        oneVariable: false,
+        text: dependentVariable.concat(" = ", func),
+      };
     }
     case 2: {
-      const leftSide = sides[0];
-      const rightSide = sides[1];
+      const [leftSide, rightSide] = sides as [Variable, string];
       if (!variables.includes(leftSide) || rightSide.includes(leftSide)) {
         throw new Error("Invalid function");
       }
-      return func;
+      return {
+        dependentVariable: leftSide,
+        function: rightSide,
+        oneVariable: variables.filter((variable) => rightSide.includes(variable)).length === 1,
+        text: func,
+      };
     }
     default:
       throw new Error("Invalid function");
   }
 };
 
-export const createGraphData = (fn: string) => {
+export const createGraphData = (fn: Equation) => {
   const points: Array<Vector3> = [];
-  const sides = fn.split("=").map((side) => side.trim());
-  const dependentVariable = sides[0];
-  const equation = sides[1];
   for (let u = -10; u < 10; u += 0.1) {
     for (let v = -10; v < 10; v += 0.1) {
       try {
         let x, y, z;
-        switch (dependentVariable) {
-          case "x": {
+        switch (fn.dependentVariable) {
+          case Variable.X: {
             y = u;
             z = v;
-            x = evaluate(equation, { y, z });
+            x = evaluate(fn.function, { y, z });
             break;
           }
-          case "y": {
+          case Variable.Y: {
             x = u;
             z = v;
-            y = evaluate(equation, { x, z });
+            y = evaluate(fn.function, { x, z });
             break;
           }
-          case "z": {
+          case Variable.Z: {
             x = u;
             y = v;
-            z = evaluate(equation, { x, y });
+            z = evaluate(fn.function, { x, y });
             break;
           }
         }
