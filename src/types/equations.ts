@@ -1,7 +1,7 @@
 export enum Variable {
-  X = 0,
-  Y = 1,
-  Z = 2,
+  X = "x",
+  Y = "y",
+  Z = "z",
 }
 
 export interface Equation {
