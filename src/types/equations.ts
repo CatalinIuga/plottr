@@ -7,6 +7,6 @@ export enum Variable {
 export interface Equation {
   dependentVariable: Variable;
   function: string;
-  oneVariable: boolean;
+  independentVariables: Variable[];
   text: string;
 }

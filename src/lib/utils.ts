@@ -22,7 +22,7 @@ export const preprocessInput = (func: string): Equation => {
       return {
         dependentVariable: dependentVariable,
         function: func,
-        oneVariable: false,
+        independentVariables: variables.filter((variable) => func.includes(variable)),
         text: dependentVariable.concat(" = ", func),
       };
     }
@@ -34,7 +34,7 @@ export const preprocessInput = (func: string): Equation => {
       return {
         dependentVariable: leftSide,
         function: rightSide,
-        oneVariable: variables.filter((variable) => rightSide.includes(variable)).length === 1,
+        independentVariables: variables.filter((variable) => rightSide.includes(variable)),
         text: func,
       };
     }
