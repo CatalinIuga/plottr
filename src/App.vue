@@ -23,7 +23,7 @@ import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { ShallowRef, ref, shallowRef, watch } from "vue";
 import { createGraphData, preprocessInput } from "./lib/utils";
-import { Equation } from "./types/equations";
+import { Equation, Variable } from "./types/equations";
 
 const open = ref(true);
 const functions = ref<Array<Equation>>([]);
@@ -66,7 +66,19 @@ const graphData = ref<Array<GraphData>>([]);
 watch(
   () => functions.value,
   (newFunctions) => {
-    const newGraphData = newFunctions.map(createGraphData);
+    const newGraphData = newFunctions.map((fn) => {
+      const data = createGraphData(fn);
+      const presentVariables =
+        fn.dependentVariable + fn.independentVariables.join("");
+      data.points.forEach((point) => {
+        Object.values(Variable).forEach((variable) => {
+          if (!presentVariables.includes(variable)) {
+            point[variable] = 0;
+          }
+        });
+      });
+      return data;
+    });
     graphData.value = newGraphData;
   },
   { deep: true, immediate: true }
