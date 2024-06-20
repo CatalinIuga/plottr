@@ -1,5 +1,5 @@
 import { Equation, Variable } from "@/types/ecuations";
-import { evaluate } from "mathjs";
+import { evaluate, parse } from "mathjs";
 import { Color, Mesh, MeshStandardMaterial, Vector3 } from "three";
 import {
   Line2,
@@ -55,22 +55,37 @@ export const preprocessInput = (func: string): Equation => {
       const dependentVariables = variables.filter(
         (variable) => !func.includes(variable)
       );
-      if (dependentVariables.length !== 1) throw new Error("Invalid function");
+      if (dependentVariables.length !== 1)
+        throw new Error("Invalid function, no dependent variable");
+
       const dependentVariable = dependentVariables[0] as Variable;
       const independentVariables = variables.filter((variable) =>
         func.includes(variable)
       );
 
-      // TODO: fix lol this doesn't work
-      if (
-        independentVariables.length &&
-        independentVariables.filter(
-          (variable) => !["x", "y", "z"].includes(variable)
-        ).length === independentVariables.length &&
-        ["x", "y", "z"].includes(dependentVariable)
-      ) {
-        throw new Error("Invalid function, unknown variable");
+      // better then nothing lol
+      let vars: string[] = [];
+      try {
+        vars = [
+          ...new Set(
+            parse(func)
+              .filter(
+                (node) =>
+                  node.type === "SymbolNode" &&
+                  !["sin", "cos", "tan", "sqrt", "log", "exp"].includes(
+                    node.toString()
+                  )
+              )
+              .map((node) => node.toString())
+          ),
+        ];
+      } catch (e) {
+        console.error("Invalid function", e);
+        throw new Error("Invalid function, could not evaluate");
       }
+
+      if (vars.some((v) => !["x", "y", "z"].includes(v)))
+        throw new Error("Invalid function, unknown variable");
 
       return {
         is3D: independentVariables.length === 2 || false,
@@ -91,16 +106,30 @@ export const preprocessInput = (func: string): Equation => {
       );
       if (rightSide.trim() === "") throw new Error("Invalid function");
 
-      // TODO: fix lol this doesn't work
-      if (
-        independentVariables.length &&
-        independentVariables.filter(
-          (variable) => !["x", "y", "z"].includes(variable)
-        ).length === independentVariables.length &&
-        ["x", "y", "z"].includes(leftSide)
-      ) {
-        throw new Error("Invalid function, unknown variable");
+      // better then nothing lol
+      let vars: string[] = [];
+      try {
+        vars = [
+          ...new Set(
+            parse(func)
+              .filter(
+                (node) =>
+                  node.type === "SymbolNode" &&
+                  !["sin", "cos", "tan", "sqrt", "log", "exp"].includes(
+                    node.toString()
+                  )
+              )
+
+              .map((node) => node.toString())
+          ),
+        ];
+      } catch (e) {
+        console.error("Invalid function", e);
+        throw new Error("Invalid function, could not evaluate");
       }
+      console.log(vars);
+      if (vars.some((v) => !["x", "y", "z"].includes(v)))
+        throw new Error("Invalid function, unknown variable");
 
       return {
         is3D: independentVariables.length === 2 || false,

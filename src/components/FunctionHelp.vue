@@ -55,7 +55,7 @@ import { InfoIcon } from "lucide-vue-next";
         to the function name.
       </DialogDescription>
       <DialogDescription class="text-foreground">
-        You cam remove functions from the plot by clicking on the X icon next to
+        You can remove functions from the plot by clicking on the X icon next to
         the function.
       </DialogDescription>
     </DialogContent>

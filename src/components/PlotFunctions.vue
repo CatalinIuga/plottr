@@ -2,6 +2,7 @@
 import { createGraphData } from "@/lib/math";
 import { Equation } from "@/types/ecuations";
 import { computed } from "vue";
+
 const { data } = defineProps<{
   data: Array<Equation>;
 }>();
@@ -16,5 +17,7 @@ const functionsPloted = computed(() => {
 </script>
 
 <template>
-  <primitive v-for="f in functionsPloted" :key="f.uuid" :object="f.clone()" />
+  <TresGroup>
+    <primitive v-for="f in functionsPloted" :key="f.uuid" :object="f.clone()" />
+  </TresGroup>
 </template>
