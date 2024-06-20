@@ -1,4 +1,4 @@
-import { Equation, Variable } from "@/types/ecuations";
+import { Equation, Variable } from "@/types/equations";
 import { evaluate, parse } from "mathjs";
 import { Color, Mesh, MeshStandardMaterial, Vector3 } from "three";
 import {
@@ -127,7 +127,6 @@ export const preprocessInput = (func: string): Equation => {
         console.error("Invalid function", e);
         throw new Error("Invalid function, could not evaluate");
       }
-      console.log(vars);
       if (vars.some((v) => !["x", "y", "z"].includes(v)))
         throw new Error("Invalid function, unknown variable");
 

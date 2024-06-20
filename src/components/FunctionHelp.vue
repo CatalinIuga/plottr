@@ -7,13 +7,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { InfoIcon } from "lucide-vue-next";
+import { HelpCircleIcon } from "lucide-vue-next";
 </script>
 
 <template>
   <Dialog>
     <DialogTrigger>
-      <InfoIcon class="size-4 cursor-pointer text-foreground" />
+      <HelpCircleIcon class="size-4 cursor-pointer text-foreground" />
     </DialogTrigger>
     <DialogContent class="dark text-foreground bg-background">
       <DialogHeader>
@@ -39,7 +39,7 @@ import { InfoIcon } from "lucide-vue-next";
       </DialogDescription>
       <DialogDescription class="text-foreground">
         After a successful addition, the function will be plotted on the canvas
-        and you will be able to see it in the "Ploted functions" section.
+        and you will be able to see it in the "Plotted functions" section.
       </DialogDescription>
       <DialogDescription class="text-foreground">
         If you want to change the color of the function, you can do so by
@@ -57,6 +57,10 @@ import { InfoIcon } from "lucide-vue-next";
       <DialogDescription class="text-foreground">
         You can remove functions from the plot by clicking on the X icon next to
         the function.
+      </DialogDescription>
+      <DialogDescription class="text-foreground">
+        You can download the plot as an image by clicking on the download
+        button, the image will be saved as a PNG file.
       </DialogDescription>
     </DialogContent>
   </Dialog>

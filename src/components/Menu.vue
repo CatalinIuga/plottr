@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { boxSize, setBoxSize } from "@/lib/constants";
-import { ChevronLeftIcon, ChevronRightIcon, CircleHelp } from "lucide-vue-next";
+import { ChevronLeftIcon, ChevronRightIcon, InfoIcon } from "lucide-vue-next";
 import { ref } from "vue";
 
 const boxSizeRef = ref(boxSize);
@@ -27,42 +27,43 @@ const open = ref(true);
       <div class="text-foreground tracking-wider font-heading text-2xl">
         Plottr
       </div>
-      <!-- Help Trigger -->
-
-      <Dialog>
-        <DialogTrigger class="absolute right-14">
-          <CircleHelp class="cursor-pointer right-14 text-foreground" />
-        </DialogTrigger>
-        <DialogContent class="dark text-foreground bg-background">
-          <DialogHeader>
-            <DialogTitle
-              class="text-foreground tracking-wider font-heading text-2xl"
-            >
-              About Plottr
-            </DialogTitle>
-          </DialogHeader>
-          <DialogDescription>
-            Plottr is a simple 3D function plotter. You can add functions to the
-            plot by typing them in the input field and pressing enter.
-          </DialogDescription>
-          <DialogDescription class="flex items-center gap-2">
-            <div class="">
-              You can also change the size of the bounding box by typing a
-              number in the input field below.
-            </div>
-            <Input
-              v-model="boxSizeRef"
-              :autofocus="false"
-              class="text-foreground text-center w-12"
-              @keyup.enter="() => setBoxSize(boxSizeRef)"
-              placeholder="10"
-            />
-          </DialogDescription>
-        </DialogContent>
-      </Dialog>
-      <Button @click="() => (open = false)" variant="outline" :size="'icon'">
-        <ChevronLeftIcon class="text-foreground" />
-      </Button>
+      <div class="flex-1 flex items-center justify-end gap-2">
+        <!-- Help Trigger -->
+        <Dialog>
+          <DialogTrigger>
+            <InfoIcon class="cursor-pointer right-14 text-foreground" />
+          </DialogTrigger>
+          <DialogContent class="dark text-foreground bg-background">
+            <DialogHeader>
+              <DialogTitle
+                class="text-foreground tracking-wider font-heading text-2xl"
+              >
+                About Plottr
+              </DialogTitle>
+            </DialogHeader>
+            <DialogDescription>
+              Plottr is a simple 3D function plotter. You can add functions to
+              the plot by typing them in the input field and pressing enter.
+            </DialogDescription>
+            <DialogDescription class="flex items-center gap-2">
+              <div class="">
+                You can also change the size of the bounding box by typing a
+                number in the input field below.
+              </div>
+              <Input
+                v-model="boxSizeRef"
+                :autofocus="false"
+                class="text-foreground text-center w-12"
+                @keyup.enter="() => setBoxSize(boxSizeRef)"
+                placeholder="10"
+              />
+            </DialogDescription>
+          </DialogContent>
+        </Dialog>
+        <Button @click="() => (open = false)" variant="outline" :size="'icon'">
+          <ChevronLeftIcon class="text-foreground" />
+        </Button>
+      </div>
     </div>
     <!-- Main slot -->
     <slot />

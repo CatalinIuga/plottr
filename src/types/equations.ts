@@ -1,3 +1,5 @@
+import { Color, Vector3 } from "three";
+
 export enum Variable {
   X = "x",
   Y = "y",
@@ -5,8 +7,16 @@ export enum Variable {
 }
 
 export interface Equation {
+  is3D?: boolean;
+  color: Color;
   dependentVariable: Variable;
-  function: string;
+  body: string;
   independentVariables: Variable[];
   text: string;
+}
+
+export interface FunctionPlotData {
+  is3D?: boolean;
+  points: Vector3[];
+  color: Color;
 }

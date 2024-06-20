@@ -11,7 +11,6 @@ export const boxSize = parseInt(localStorage.getItem("boxSize") || "10") || 10; 
 
 // Set grid size
 export function setBoxSize(newBoxSize: number) {
-  console.log("Setting box size to", newBoxSize);
   localStorage.setItem("boxSize", newBoxSize.toString());
   location.reload();
 }

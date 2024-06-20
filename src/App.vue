@@ -2,7 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { XIcon } from "lucide-vue-next";
+import { OrbitControls, Precipitation } from "@tresjs/cientos";
+import { BananaIcon, DownloadIcon, XIcon } from "lucide-vue-next";
 import GridAndAxes from "./components/AxesGrid.vue";
 import BoundingBox from "./components/BoundingBox.vue";
 import CamerasAndLights from "./components/CamerasAndLights.vue";
@@ -12,12 +13,13 @@ import Menu from "./components/Menu.vue";
 import PlotFunctions from "./components/PlotFunctions.vue";
 
 import { options } from "@/lib/constants";
-import { OrbitControls } from "@tresjs/cientos";
 import { TresCanvas } from "@tresjs/core";
 
-import { ref } from "vue";
+import { boxSize } from "@/lib/constants";
+import { SRGBColorSpace, TextureLoader } from "three";
+import { ref, shallowRef } from "vue";
 import { preprocessInput } from "./lib/math";
-import { Equation } from "./types/ecuations";
+import { Equation } from "./types/equations";
 
 // z = 4 * exp(-1/4 * y^2) * sin(2 * x) - nice :)
 
@@ -29,13 +31,50 @@ function changeColor(f: Equation, event: ColorInputEvent) {
   f.color.set(event.target.value);
 }
 
+const context = shallowRef();
+
+function downloadCanvas() {
+  if (context.value) {
+    context.value.download();
+  }
+}
+
 const functionPlotData = ref<Array<Equation>>([]);
+
+const goBananas = ref(false);
+
+const bananaTexture = new TextureLoader().load("/banana.png", (texture) => {
+  texture.colorSpace = SRGBColorSpace;
+});
 </script>
 
 <template>
   <div class="dark min-h-screen relative w-screen flex">
     <Menu>
       <div class="relative p-2 flex flex-col items-start gap-2">
+        <div class="flex w-full justify-center flex-col gap-2 mb-2">
+          <Button
+            @click="() => (goBananas = !goBananas)"
+            class="p-2 mt-2 rounded-sm font-heading flex items-center justify-center gap-2"
+            :class="
+              !goBananas
+                ? 'bg-yellow-200/80 text-yellow-900 hover:bg-yellow-200/70'
+                : 'bg-red-500 text-yellow-100 hover:bg-red-500/80'
+            "
+            variant="outline"
+          >
+            {{ goBananas ? "Stop the bananas" : "Go bananas" }}
+            <BananaIcon class="size-5 stroke-[3px]" />
+          </Button>
+          <Button
+            @click="downloadCanvas"
+            class="p-2 mt-2 rounded-sm font-heading flex items-center justify-center gap-2"
+            variant="default"
+          >
+            Download
+            <DownloadIcon class="size-5" />
+          </Button>
+        </div>
         <Label class="text-foreground text-base px-1 flex items-center gap-2">
           Add a function
           <FunctionHelp />
@@ -55,9 +94,9 @@ const functionPlotData = ref<Array<Equation>>([]);
           placeholder="x = 2 * sin(y) + 3 * cos(z)"
         />
       </div>
-      <!-- Ploted functions data -->
+      <!-- Plotted functions data -->
       <div class="p-2 flex flex-col gap-2">
-        <div class="text-foreground font-bold">Ploted functions</div>
+        <div class="text-foreground font-bold">Plotted functions</div>
         <div class="flex flex-col">
           <div v-if="functionPlotData.length === 0" class="">
             <div class="text-muted-foreground text-sm text-center">
@@ -102,7 +141,6 @@ const functionPlotData = ref<Array<Equation>>([]);
               </div>
             </Button>
             <!-- button to remove the function -->
-
             <XIcon
               @click="
                 () => {
@@ -117,12 +155,19 @@ const functionPlotData = ref<Array<Equation>>([]);
     </Menu>
 
     <TresCanvas v-bind="options" window-size>
-      <ContextEnable>
+      <ContextEnable ref="context">
         <CamerasAndLights />
         <GridAndAxes />
         <OrbitControls />
         <BoundingBox />
-        <PlotFunctions :data="functionPlotData" />
+        <PlotFunctions :goBananas="goBananas" :data="functionPlotData" />
+        <!-- @vue-expect-error Make it rain! -->
+        <Precipitation
+          :map="bananaTexture"
+          :size="boxSize / 10"
+          :area="[boxSize, boxSize, boxSize]"
+          :count="goBananas ? 1000 : 0"
+        />
       </ContextEnable>
     </TresCanvas>
   </div>
