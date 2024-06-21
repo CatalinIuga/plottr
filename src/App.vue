@@ -39,6 +39,7 @@ function downloadCanvas() {
 }
 
 const functionPlotData = ref<Array<Equation>>([]);
+const error = ref<string | null>(null);
 
 const discoMode = ref(false);
 </script>
@@ -78,16 +79,21 @@ const discoMode = ref(false);
           class="text-foreground text-base h-10"
           @keyup.enter="
             (e:InputEvent) => {
+              error = null;
               try {
                 const s = preprocessInput((e.target as HTMLInputElement).value);
                 functionPlotData.push(s);
-              } catch (e) {
+              } catch (e: any) {
                 console.error(e);
+                error = e.message;
               }
             }
           "
           placeholder="x = 2 * sin(y) + 3 * cos(z)"
         />
+        <div v-if="error" class="text-red-500 text-sm text-center w-full">
+          {{ error }}
+        </div>
       </div>
       <!-- Plotted functions data -->
       <div class="p-2 flex flex-col gap-2">

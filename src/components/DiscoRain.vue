@@ -1,18 +1,7 @@
 <script setup lang="ts">
 import { boxSize } from "@/lib/constants";
-import { Sparkles, Stars } from "@tresjs/cientos";
-import { useRenderLoop, useTresContext } from "@tresjs/core";
-import {
-  Color,
-  CubeCamera,
-  HalfFloatType,
-  Mesh,
-  MeshStandardMaterial,
-  SphereGeometry,
-  TextureLoader,
-  Vector3,
-  WebGLCubeRenderTarget,
-} from "three";
+import { Sparkles, Stars, useFBO } from "@tresjs/cientos";
+import { Color, Vector3 } from "three";
 import Rain from "./Rain.vue";
 
 const props = defineProps<{ discoMode: boolean }>();
@@ -25,30 +14,16 @@ const colors: Color[] = Array.from(
 );
 
 // DISCO BALL
-const cubeRenderTarget = new WebGLCubeRenderTarget(512);
-cubeRenderTarget.texture.type = HalfFloatType;
-
-const cubeCamera = new CubeCamera(1, 1000, cubeRenderTarget);
-
-const baseTexture = new TextureLoader().load("/disco.jpg");
-
-const material = new MeshStandardMaterial({
-  envMap: cubeRenderTarget.texture,
-  roughness: 0.05,
-  metalness: 1,
-  normalMap: baseTexture,
+const fboTarget = useFBO({
+  depth: true,
+  width: 512,
+  height: 512,
+  settings: {
+    samples: 1,
+  },
 });
 
-const discoBall = new Mesh(new SphereGeometry(1, 32, 32), material);
-
-// Update the cube camera
-const { renderer, scene } = useTresContext();
-const { onLoop } = useRenderLoop();
-onLoop(() => {
-  cubeCamera.update(renderer.value, scene.value);
-});
-
-const discoBallPosition = new Vector3(0, boxSize / 2 - boxSize / 8, 0);
+const discoBallPosition = new Vector3(0, boxSize / 2 + 1, 0);
 </script>
 
 <template>
@@ -65,6 +40,7 @@ const discoBallPosition = new Vector3(0, boxSize / 2 - boxSize / 8, 0);
   <TresGroup v-if="discoMode">
     <!-- DiscoBallv2 -->
     <Sparkles
+      :map="'/star.png'"
       :sequence-alpha="[
         [0, 0],
         [0.3, 1.0],
@@ -96,7 +72,7 @@ const discoBallPosition = new Vector3(0, boxSize / 2 - boxSize / 8, 0);
         [0.7, 1.0],
         [1.0, 1.5],
       ]"
-      :lifetime-sec="1.5"
+      :lifetime-sec="0.5"
       :size="2.5"
       :surface-distance="1.2"
       :mix-color="0.8"
@@ -108,7 +84,18 @@ const discoBallPosition = new Vector3(0, boxSize / 2 - boxSize / 8, 0);
       :transparent="true"
       :depth-write="false"
     />
+    <TresMesh
+      :position="discoBallPosition"
+      :rotation="[0, Math.PI / 2, Math.PI / 2]"
+    >
+      <TresOctahedronGeometry :args="[1, 2]" />
+      <TresMeshPhongMaterial
+        :color="new Color(0xf2f2f2)"
+        :flat-shading="true"
+        :transparent="false"
+        :map="fboTarget?.texture ?? null"
+      />
+    </TresMesh>
     <Stars />
   </TresGroup>
-  <primitive :position="discoBallPosition" :object="discoBall" />
 </template>

@@ -80,7 +80,6 @@ export const preprocessInput = (func: string): Equation => {
           ),
         ];
       } catch (e) {
-        console.error("Invalid function", e);
         throw new Error("Invalid function, could not evaluate");
       }
 
@@ -99,12 +98,13 @@ export const preprocessInput = (func: string): Equation => {
     case 2: {
       const [leftSide, rightSide] = sides as [Variable, string];
       if (!variables.includes(leftSide) || rightSide.includes(leftSide)) {
-        throw new Error("Invalid function");
+        throw new Error("Invalid function, same variable on both sides");
       }
       const independentVariables = variables.filter((variable) =>
         rightSide.includes(variable)
       );
-      if (rightSide.trim() === "") throw new Error("Invalid function");
+      if (rightSide.trim() === "")
+        throw new Error("Invalid function, empty right side");
 
       // better then nothing lol
       let vars: string[] = [];
@@ -124,7 +124,6 @@ export const preprocessInput = (func: string): Equation => {
           ),
         ];
       } catch (e) {
-        console.error("Invalid function", e);
         throw new Error("Invalid function, could not evaluate");
       }
       if (vars.some((v) => !["x", "y", "z"].includes(v)))
