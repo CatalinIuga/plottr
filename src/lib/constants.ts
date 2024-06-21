@@ -6,15 +6,22 @@ import {
   Vector3,
 } from "three";
 
-// Grid size
+/**
+ * Dimensiunea spațiului de desenare.
+ */
 export const boxSize = parseInt(localStorage.getItem("boxSize") || "10") || 10; // fallback to fallback. nice :)
 
-// Set grid size
+/**
+ * Setează dimensiunea spațiului de desenare.
+ */
 export function setBoxSize(newBoxSize: number) {
   localStorage.setItem("boxSize", newBoxSize.toString());
   location.reload();
 }
 
+/**
+ * Opțiunile de randare ale scenei.
+ */
 export const options = {
   shadows: true,
   alpha: false,
@@ -25,6 +32,9 @@ export const options = {
   clearColor: "#252525",
 };
 
+/**
+ * Planurile de limitare ale spațiului de desenare.
+ */
 export const clipPlanes = [
   new Plane(new Vector3(1, 0, 0), boxSize / 2),
   new Plane(new Vector3(-1, 0, 0), boxSize / 2),

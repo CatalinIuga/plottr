@@ -26,29 +26,42 @@ interface ColorInputEvent extends InputEvent {
   target: HTMLInputElement;
 }
 
+/**
+ * Schimbarea culorii reprezentării unei funcții
+ */
 function changeColor(f: Equation, event: ColorInputEvent) {
   f.color.set(event.target.value);
 }
 
 const context = shallowRef();
 
+/**
+ * Descarcă canvas-ul ca imagine
+ */
 function downloadCanvas() {
   if (context.value) {
     context.value.download();
   }
 }
 
-const functionPlotData = ref<Array<Equation>>([]);
+const functionPlotData = ref<Array<Equation>>([]); // datele funcțiilor reprezentate
 const error = ref<string | null>(null);
 
+/**
+ * Modul disco; easter egg pentru a demonstra posibilitățile de animație ale Tres.js
+ */
 const discoMode = ref(false);
 </script>
 
 <template>
+  <!-- Fundalul aplicatiei -->
   <div class="dark min-h-screen relative w-screen flex">
+    <!-- Meniul principal al aplicatiei -->
     <Menu>
+      <!-- Input-urile pentru utilizator -->
       <div class="relative p-2 flex flex-col items-start gap-2">
         <div class="flex w-full justify-center flex-col gap-2 mb-2">
+          <!-- Button toggle pentru modul disco -->
           <Button
             @click="() => (discoMode = !discoMode)"
             class="p-2 mt-2 rounded-sm font-heading flex items-center justify-center gap-2"
@@ -62,6 +75,7 @@ const discoMode = ref(false);
             Disco mode {{ discoMode ? "on" : "off" }}
             <PartyPopperIcon class="size-4 stroke-[3px]" />
           </Button>
+          <!-- Button pentru a descărca canvas-ul -->
           <Button
             @click="downloadCanvas"
             class="p-2 mt-2 rounded-sm font-heading flex items-center justify-center gap-2"
@@ -71,6 +85,7 @@ const discoMode = ref(false);
             <DownloadIcon class="size-5" />
           </Button>
         </div>
+        <!-- Zona de adăugare a unei funcții -->
         <Label class="text-foreground text-base px-1 flex items-center gap-2">
           Add a function
           <FunctionHelp />
@@ -95,7 +110,7 @@ const discoMode = ref(false);
           {{ error }}
         </div>
       </div>
-      <!-- Plotted functions data -->
+      <!-- Lista funcțiilor reprezentate -->
       <div class="p-2 flex flex-col gap-2">
         <div class="text-foreground font-bold">Plotted functions</div>
         <div class="flex flex-col">
@@ -109,6 +124,7 @@ const discoMode = ref(false);
             :key="i"
             class="flex p-1 first:rounded-t border-border border-x border-t last:border-b last:rounded-b items-center justify-between w-full"
           >
+            <!-- Selectarea culorii funcției -->
             <input
               type="color"
               class="bg-transparent border-none size-8 block cursor-pointer"
@@ -121,7 +137,7 @@ const discoMode = ref(false);
             >
               {{ f.text }}
             </div>
-            <!-- button to force 3d for functions that have 1 independent variable -->
+            <!-- Buton pentru a schimba între reprezentarea 2D și 3D -->
             <Button
               v-if="f.independentVariables.length < 2"
               @click="
@@ -141,7 +157,7 @@ const discoMode = ref(false);
                 {{ functionPlotData[i].is3D ? "3D" : "2D" }}
               </div>
             </Button>
-            <!-- button to remove the function -->
+            <!-- Buton pentru a șterge funcția -->
             <XIcon
               @click="
                 () => {
@@ -155,13 +171,20 @@ const discoMode = ref(false);
       </div>
     </Menu>
 
+    <!-- Canvas-ul principal al aplicației -->
     <TresCanvas v-bind="options" window-size>
       <ContextEnable ref="context">
+        <!-- Camerele și luminile din scenă -->
         <CamerasAndLights />
+        <!-- Planul de coordonate și axele de coordonate -->
         <GridAndAxes />
+        <!-- Controlul camerei -->
         <OrbitControls />
+        <!-- Bounding box-ul care delimitează zona de vizualizare -->
         <BoundingBox />
+        <!-- Reprezentarea funcțiilor -->
         <PlotFunctions :discoMode="discoMode" :data="functionPlotData" />
+        <!-- Efectele pentrul modul disco -->
         <DiscoRain :discoMode="discoMode" />
       </ContextEnable>
     </TresCanvas>
