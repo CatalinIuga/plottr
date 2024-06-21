@@ -5,11 +5,11 @@ import gsap from "gsap";
 import { computed, ref, shallowRef, toRefs, watch } from "vue";
 
 const props = defineProps<{
-  goBananas: boolean;
+  discoMode: boolean;
   data: Array<Equation>;
 }>();
 
-const goNanas = toRefs(props);
+const refs = toRefs(props);
 const { data } = props;
 
 const plotedFunctionsRef = shallowRef();
@@ -25,7 +25,7 @@ const functionsPloted = computed(() => {
   }
 });
 
-watch(goNanas.goBananas, (newVal) => {
+watch(refs.discoMode, (newVal) => {
   if (newVal) {
     const animate = () => {
       plotedFunctionsRef.value.children.forEach((f: any) => {

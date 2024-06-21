@@ -2,12 +2,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { OrbitControls, Precipitation } from "@tresjs/cientos";
-import { BananaIcon, DownloadIcon, XIcon } from "lucide-vue-next";
+import { OrbitControls } from "@tresjs/cientos";
+import { DownloadIcon, PartyPopperIcon, XIcon } from "lucide-vue-next";
 import GridAndAxes from "./components/AxesGrid.vue";
 import BoundingBox from "./components/BoundingBox.vue";
 import CamerasAndLights from "./components/CamerasAndLights.vue";
 import ContextEnable from "./components/ContextEnable.vue";
+import DiscoRain from "./components/DiscoRain.vue";
 import FunctionHelp from "./components/FunctionHelp.vue";
 import Menu from "./components/Menu.vue";
 import PlotFunctions from "./components/PlotFunctions.vue";
@@ -15,8 +16,6 @@ import PlotFunctions from "./components/PlotFunctions.vue";
 import { options } from "@/lib/constants";
 import { TresCanvas } from "@tresjs/core";
 
-import { boxSize } from "@/lib/constants";
-import { SRGBColorSpace, TextureLoader } from "three";
 import { ref, shallowRef } from "vue";
 import { preprocessInput } from "./lib/math";
 import { Equation } from "./types/equations";
@@ -41,11 +40,7 @@ function downloadCanvas() {
 
 const functionPlotData = ref<Array<Equation>>([]);
 
-const goBananas = ref(false);
-
-const bananaTexture = new TextureLoader().load("/banana.png", (texture) => {
-  texture.colorSpace = SRGBColorSpace;
-});
+const discoMode = ref(false);
 </script>
 
 <template>
@@ -54,17 +49,17 @@ const bananaTexture = new TextureLoader().load("/banana.png", (texture) => {
       <div class="relative p-2 flex flex-col items-start gap-2">
         <div class="flex w-full justify-center flex-col gap-2 mb-2">
           <Button
-            @click="() => (goBananas = !goBananas)"
+            @click="() => (discoMode = !discoMode)"
             class="p-2 mt-2 rounded-sm font-heading flex items-center justify-center gap-2"
+            variant="secondary"
             :class="
-              !goBananas
-                ? 'bg-yellow-200/80 text-yellow-900 hover:bg-yellow-200/70'
-                : 'bg-red-500 text-yellow-100 hover:bg-red-500/80'
+              discoMode
+                ? 'bg-green-500 hover:bg-green-500/80'
+                : 'bg-red-500 hover:bg-red-500/80'
             "
-            variant="outline"
           >
-            {{ goBananas ? "Stop the bananas" : "Go bananas" }}
-            <BananaIcon class="size-5 stroke-[3px]" />
+            Disco mode {{ discoMode ? "on" : "off" }}
+            <PartyPopperIcon class="size-4 stroke-[3px]" />
           </Button>
           <Button
             @click="downloadCanvas"
@@ -160,14 +155,8 @@ const bananaTexture = new TextureLoader().load("/banana.png", (texture) => {
         <GridAndAxes />
         <OrbitControls />
         <BoundingBox />
-        <PlotFunctions :goBananas="goBananas" :data="functionPlotData" />
-        <!-- @vue-expect-error Make it rain! -->
-        <Precipitation
-          :map="bananaTexture"
-          :size="boxSize / 10"
-          :area="[boxSize, boxSize, boxSize]"
-          :count="goBananas ? 1000 : 0"
-        />
+        <PlotFunctions :discoMode="discoMode" :data="functionPlotData" />
+        <DiscoRain :discoMode="discoMode" />
       </ContextEnable>
     </TresCanvas>
   </div>
