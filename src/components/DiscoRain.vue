@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { boxSize } from "@/lib/constants";
-import { Stars } from "@tresjs/cientos";
+import { Sparkles, Stars } from "@tresjs/cientos";
 import { useRenderLoop, useTresContext } from "@tresjs/core";
 import {
   Color,
@@ -64,6 +64,50 @@ const discoBallPosition = new Vector3(0, boxSize / 2 - boxSize / 8, 0);
   />
   <TresGroup v-if="discoMode">
     <!-- DiscoBallv2 -->
+    <Sparkles
+      :sequence-alpha="[
+        [0, 0],
+        [0.3, 1.0],
+        [0.5, 0.5],
+        [0.7, 0.8],
+        [1.0, 0.0],
+      ]"
+      :sequence-color="[
+        [0.0, '#ff0000'],
+        [0.25, '#ff8c00'],
+        [0.5, '#ffff00'],
+        [0.75, '#00ff00'],
+        [1.0, '#0000ff'],
+      ]"
+      :sequence-offset="[
+        [0.0, [0, -5, 0]],
+        [0.5, [0, 10, 0]],
+        [1.0, [0, 5, 0]],
+      ]"
+      :sequence-size="[
+        [0.0, 0.5],
+        [0.3, 1.5],
+        [0.7, 1.0],
+        [1.0, 2.0],
+      ]"
+      :sequence-surface-distance="[
+        [0.0, 0.0],
+        [0.3, 0.5],
+        [0.7, 1.0],
+        [1.0, 1.5],
+      ]"
+      :lifetime-sec="1.5"
+      :size="2.5"
+      :surface-distance="1.2"
+      :mix-color="0.8"
+      :noise-scale="5.0"
+      :scale-noise="1.5"
+      :offset-noise="0.3"
+      :lifetime-noise="0.2"
+      :blending="2"
+      :transparent="true"
+      :depth-write="false"
+    />
     <Stars />
   </TresGroup>
   <primitive :position="discoBallPosition" :object="discoBall" />
