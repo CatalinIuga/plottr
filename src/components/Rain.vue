@@ -19,7 +19,6 @@ export interface PrecipitationProps {
   randomness?: number;
   depthWrite?: boolean;
   transparent?: boolean;
-
   sizeAttenuation?: boolean;
 }
 

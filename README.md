@@ -1,9 +1,22 @@
-# Vue 3 + TypeScript + Vite
+# Plottr
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+A function graph plotter using TresJs and Vue.
 
-## Recommended Setup
+![Interface](assets/interface.png)
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+Also includes a disco mode, where the function "dance", confeti falls, a reflective disco ball appears and a fountain of star sparkles emerges.
 
-- Use [vue-tsc](https://github.com/vuejs/language-tools/tree/master/packages/tsc) for performing the same type checking from the command line, or for generating d.ts files for SFCs.
+## Features
+
+- Plot functions
+- Customize the color of the plot
+- 🕺Disco Mode🕺
+
+## Run Locally
+
+Install dependencies and run the project.
+
+```bash
+  npm install
+  npm run dev
+```

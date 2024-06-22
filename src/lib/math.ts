@@ -18,14 +18,11 @@ function assignVariables(
   u: number,
   v: number
 ) {
-  let missingVars: Variable[] | undefined; // Variabilele care lipsesc din ecuație
-  missingVars = Object.values(Variable).filter(
+  // Variabilele care lipsesc din ecuație
+  const missingVars = Object.values(Variable).filter(
     (variable) =>
       !independentVars.includes(variable) && variable !== dependentVar
   );
-
-  // if there is more than
-  if (!missingVars) throw new Error("Invalid function, missing variable");
 
   // în funcție de numărul de variabile lipsă, se atribuie valorile variabilelor independente
   switch (missingVars.length) {

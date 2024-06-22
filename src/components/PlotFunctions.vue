@@ -34,23 +34,24 @@ watch(refs.discoMode, (newVal) => {
           y: Math.random() * 10 - 5,
           z: Math.random() * 10 - 5,
         };
-        const randomRotation = {
-          x: Math.random() * Math.PI * 2,
-          y: Math.random() * Math.PI * 2,
-          z: Math.random() * Math.PI * 2,
-        };
-        const randomScale = Math.random() * 2;
-
         gsap.to(f.position, {
           duration: 1,
           ...randomPosition,
           ease: "sine.inOut",
         });
+
+        const randomRotation = {
+          x: Math.random() * Math.PI * 2,
+          y: Math.random() * Math.PI * 2,
+          z: Math.random() * Math.PI * 2,
+        };
         gsap.to(f.rotation, {
           duration: 1,
           ...randomRotation,
           ease: "sine.inOut",
         });
+
+        const randomScale = Math.random() * 2;
         gsap.to(f.scale, {
           duration: 1,
           x: randomScale,
